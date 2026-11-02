@@ -2161,7 +2161,7 @@
           </p>
 
           <div class="space-y-3.5 pt-2">
-            <a href="mailto:info.rjchemicals@gmail.com" class="glass-card p-4 rounded-xl flex items-center gap-4">
+            <a href="mailto:info.rjchemicals@gmail.com?cc=ray.rjchemicals@gmail.com&amp;subject=R%20J%20Chemicals%20Canada%20-%20Direct%20Inquiry" class="glass-card p-4 rounded-xl flex items-center gap-4">
               <div class="w-11 h-11 rounded-lg bg-phoenix-500/15 border border-phoenix-500/30 flex items-center justify-center text-phoenix-400">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
               </div>
@@ -2259,12 +2259,22 @@
               <textarea id="formMessage" rows="4" placeholder="Tell us which products from our Main Product List interest you, or describe your cleaning, disinfection, or odour-control challenge..." class="w-full rounded-xl bg-slate950 border border-slate-700 focus:border-phoenix-500 px-4 py-3 text-sm text-white outline-none"></textarea>
             </div>
 
-            <button type="submit" class="w-full phoenix-btn text-obsidian font-display font-extrabold py-4 rounded-xl text-sm sm:text-base">
+            <button type="submit" id="formSubmitBtn" class="w-full phoenix-btn text-obsidian font-display font-extrabold py-4 rounded-xl text-sm sm:text-base cursor-pointer">
               Send Direct Inquiry to R J Chemicals →
             </button>
 
-            <div id="formSuccess" class="hidden p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-sm">
-              ✓ Thank you! Your facility inquiry has been prepared for <strong>Ray Junghans &amp; Marty Rapson (info.rjchemicals@gmail.com)</strong>.
+            <div id="formSuccess" class="hidden p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-sm space-y-3">
+              <div>
+                ✓ Thank you! Your facility inquiry has been prepared for <strong>Ray Junghans &amp; Marty Rapson (info.rjchemicals@gmail.com)</strong>.
+              </div>
+              <div class="flex flex-wrap gap-2.5 pt-1">
+                <a id="formMailtoFallback" href="mailto:info.rjchemicals@gmail.com" class="px-3.5 py-2 rounded-lg bg-emerald-500 text-obsidian font-display font-bold text-xs hover:bg-emerald-400 transition">
+                  ✉️ Open in Email App →
+                </a>
+                <a id="formGmailFallback" href="https://mail.google.com/" target="_blank" rel="noopener" class="px-3.5 py-2 rounded-lg bg-slate950 border border-emerald-500/40 text-emerald-300 font-mono text-xs hover:border-emerald-400 transition">
+                  📨 Send via Gmail Web →
+                </a>
+              </div>
             </div>
           </form>
         </div>
@@ -2744,7 +2754,54 @@
 
     function handleFormSubmit(e) {
       e.preventDefault();
+      const name = (document.getElementById('formName')?.value || '').trim();
+      const company = (document.getElementById('formCompany')?.value || '').trim();
+      const email = (document.getElementById('formEmail')?.value || '').trim();
+      const industry = (document.getElementById('formIndustry')?.value || '').trim();
+      const message = (document.getElementById('formMessage')?.value || '').trim();
+
+      const subject = `R J Chemicals Website Inquiry: ${company || name || 'New Facility Request'}`;
+      const bodyLines = [
+        `New Website Inquiry — R J Chemicals Canada (rjchemicalscanada.ca)`,
+        `------------------------------------------------------------------`,
+        `Name: ${name}`,
+        `Company / Facility: ${company}`,
+        `Reply Email: ${email}`,
+        `Industry Sector: ${industry}`,
+        ``,
+        `Products of Interest / Challenges to Address:`,
+        `${message || '(No additional message provided)'}`,
+        `------------------------------------------------------------------`
+      ];
+      const bodyText = bodyLines.join('\r\n');
+
+      const mailtoUrl = `mailto:info.rjchemicals@gmail.com?cc=${encodeURIComponent('ray.rjchemicals@gmail.com')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent('info.rjchemicals@gmail.com')}&cc=${encodeURIComponent('ray.rjchemicals@gmail.com')}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+
+      const mailtoBtn = document.getElementById('formMailtoFallback');
+      const gmailBtn = document.getElementById('formGmailFallback');
+      if (mailtoBtn) mailtoBtn.href = mailtoUrl;
+      if (gmailBtn) gmailBtn.href = gmailUrl;
+
       document.getElementById('formSuccess').classList.remove('hidden');
+
+      // Also dispatch via FormSubmit AJAX endpoint in the background
+      fetch('https://formsubmit.co/ajax/info.rjchemicals@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          company: company,
+          email: email,
+          industry: industry,
+          message: message || 'General Facility / Product Inquiry',
+          _cc: 'ray.rjchemicals@gmail.com',
+          _subject: subject
+        })
+      }).catch(() => {});
+
+      // Open default email client pre-addressed to info.rjchemicals@gmail.com & ray.rjchemicals@gmail.com
+      window.location.href = mailtoUrl;
     }
 
     // 5A. Field Videos & Testimonials Data & Instant Native Theater (13 Videos)
