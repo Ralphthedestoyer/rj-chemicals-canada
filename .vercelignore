@@ -1,0 +1,8 @@
+master-clean/
+scratch/
+*.pdf
+*.ics
+invoice*.html
+receipt*.html
+AGENTS.md
+GoDaddy_DNS_rjchemicalscanada.txt
